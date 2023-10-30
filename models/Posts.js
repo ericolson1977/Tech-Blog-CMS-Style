@@ -23,10 +23,6 @@ Posts.init(
         type: DataTypes.STRING,
         allowNull: false,
       },
-    created_date: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
   },
   {
     sequelize,
