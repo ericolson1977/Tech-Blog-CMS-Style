@@ -1,16 +1,16 @@
 const router = require('express').Router();
-const { Posts, Comments } = require('../models');
+const { Posts, User } = require('../models');
+const auth = require('../utils/auth');
 
-// GET all Posts for homepage
 router.get('/', async (req, res) => {
   try {
     const dbPostData = await Posts.findAll({
-    //   include: [
-    //     {
-    //       model: Comment,
-    //       attributes: [],
-    //     },
-    //   ],
+      include: [
+        {
+          model: User,
+          attributes: ['username'],
+        },
+      ],
     });
     const posts = dbPostData.map((post) =>
       post.get({ plain: true })
@@ -25,21 +25,15 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET one gallery
-router.get('/post/:id', async (req, res) => {
-  // If the user is not logged in, redirect the user to the login page
-  if (!req.session.loggedIn) {
-    res.redirect('/login');
-  } else {
-    // If the user is logged in, allow them to view the gallery
+router.get('/post/:id', auth, async (req, res) => {
     try {
       const dbPostData = await Posts.findByPk(req.params.id, {
-        // include: [
-        //   {
-        //     model: COmment,
-        //     attributes: [],
-        //   },
-        // ],
+        include: [
+          {
+            model: User,
+            attributes: ['username'],
+          },
+        ],
       });
       const post = dbPostData.get({ plain: true });
       res.render('post', { post, loggedIn: req.session.loggedIn });
@@ -47,26 +41,7 @@ router.get('/post/:id', async (req, res) => {
       console.log(err);
       res.status(500).json(err);
     }
-  }
 });
-
-// // GET one comment
-// router.get('/comment/:id', async (req, res) => {
-//   // If the user is not logged in, redirect the user to the login page
-//   if (!req.session.loggedIn) {
-//     res.redirect('/login');
-//   } else {
-//     // If the user is logged in, allow them to view the painting
-//     try {
-//       const dbCommentData = await Comment.findByPk(req.params.id);
-//       const comment = dbCommentData.get({ plain: true });
-//       res.render('comment', { comment, loggedIn: req.session.loggedIn });
-//     } catch (err) {
-//       console.log(err);
-//       res.status(500).json(err);
-//     }
-//   }
-// });
 
 router.get('/login', (req, res) => {
   if (req.session.loggedIn) {
